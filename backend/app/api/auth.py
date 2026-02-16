@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from ..models.base import get_db
 from ..models.user import User
-from ..core.security import verify_password, get_password_hash, create_access_token
+from ..core.security import verify_password, get_password_hash, create_access_token, decode_access_token
 from ..core.config import settings
 from pydantic import BaseModel
 
@@ -25,6 +25,18 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Get current user from token"""
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid authentication")
+    
+    user = db.query(User).filter(User.id == payload.get("sub")).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    return user
 
 @router.post("/register", response_model=UserResponse)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):

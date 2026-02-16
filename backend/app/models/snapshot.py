@@ -16,7 +16,7 @@ class Snapshot(Base):
     text_content = Column(Text)
     html_content = Column(Text)  # Compressed in production
     screenshot_path = Column(String(500))
-    metadata = Column(JSON, default={})
+    snapshot_metadata = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships

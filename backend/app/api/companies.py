@@ -8,8 +8,7 @@ from pydantic import BaseModel, HttpUrl
 from ..models.base import get_db
 from ..models.company import Company
 from ..models.user import User
-from .auth import oauth2_scheme
-from ..core.security import decode_access_token
+from .auth import oauth2_scheme, get_current_user
 from ..tasks.scrape_tasks import scrape_company
 
 router = APIRouter()
@@ -36,18 +35,6 @@ class CompanyResponse(BaseModel):
 class CompanyDetailResponse(CompanyResponse):
     total_changes: int = 0
     last_change: Optional[datetime]
-
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """Get current user from token"""
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid authentication")
-    
-    user = db.query(User).filter(User.id == payload.get("sub")).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    
-    return user
 
 @router.post("", response_model=CompanyResponse)
 async def create_company(
