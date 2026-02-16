@@ -94,4 +94,12 @@ export const changes = {
   },
 };
 
+// Users endpoints
+export const users = {
+  stats: async () => {
+    const response = await api.get('/users/stats');
+    return response.data;
+  },
+};
+
 export default api;

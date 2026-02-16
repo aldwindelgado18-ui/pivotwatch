@@ -7,6 +7,7 @@ from uuid import UUID
 from ..models.base import get_db
 from ..models.user import User
 from .auth import get_current_user
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -64,3 +65,17 @@ async def update_user_profile(
         "created_at": current_user.created_at,
         "updated_at": current_user.updated_at
     }
+
+
+class UserStatsResponse(BaseModel):
+    total: int
+    by_plan: dict
+
+
+@router.get("/stats", response_model=UserStatsResponse)
+async def get_user_stats(db: Session = Depends(get_db)):
+    """Return user counts grouped by plan"""
+    totals = db.query(func.count(User.id)).scalar() or 0
+    rows = db.query(User.plan, func.count(User.id)).group_by(User.plan).all()
+    by_plan = {plan: count for plan, count in rows}
+    return {"total": totals, "by_plan": by_plan}

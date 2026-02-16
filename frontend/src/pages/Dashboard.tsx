@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from 'react-query';
-import { companies, changes } from '../services/api';
+import { companies, changes, users as usersApi } from '../services/api';
 import { motion } from 'framer-motion';
 import {
   ChartBarIcon,
@@ -14,6 +14,7 @@ const Dashboard: React.FC = () => {
   const { data: changesData } = useQuery('recent-changes', () => 
     changes.list({ limit: 10 })
   );
+  const { data: userStats } = useQuery('user-stats', () => usersApi.stats());
 
   const stats = [
     {
@@ -39,6 +40,12 @@ const Dashboard: React.FC = () => {
       value: new Set(changesData?.map((c: any) => c.category)).size || 0,
       icon: ChartBarIcon,
       color: 'bg-purple-500',
+    },
+    {
+      name: 'Enterprise Users',
+      value: userStats?.by_plan?.enterprise || 0,
+      icon: BuildingOfficeIcon,
+      color: 'bg-indigo-500',
     },
   ];
 
