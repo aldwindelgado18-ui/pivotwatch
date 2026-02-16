@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import timedelta
 from ..models.base import get_db
 from ..models.user import User
@@ -31,12 +32,23 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid authentication")
-    
-    user = db.query(User).filter(User.id == payload.get("sub")).first()
-    if not user:
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+
+    # Query minimal user fields with raw SQL to avoid initializing all mappers
+    res = db.execute(text("SELECT id, email, plan FROM users WHERE id = :id"), {"id": user_id})
+    row = res.fetchone()
+    if not row:
         raise HTTPException(status_code=401, detail="User not found")
-    
-    return user
+
+    class CurrentUser:
+        def __init__(self, id, email, plan):
+            self.id = id
+            self.email = email
+            self.plan = plan
+
+    return CurrentUser(str(row[0]), row[1], row[2])
 
 @router.post("/register", response_model=UserResponse)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):

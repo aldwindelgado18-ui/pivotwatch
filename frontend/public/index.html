@@ -35,6 +35,18 @@
       .api-links { margin-top: 30px; }
       a { color: #667eea; text-decoration: none; margin: 0 10px; }
       a:hover { text-decoration: underline; }
+      .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+      .stat-card { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .stat-card h3 { font-size: 12px; font-weight: normal; margin-bottom: 10px; opacity: 0.9; }
+      .stat-card .stat-value { font-size: 32px; font-weight: bold; }
+      .stat-card.loading { opacity: 0.6; }
+      .error-message { color: #e53e3e; font-size: 12px; margin-top: 5px; }
     </style>
   </head>
   <body>
@@ -65,6 +77,29 @@
         </div>
       </div>
 
+      <div id="stats-section" style="display: none;">
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333; font-size: 18px;">📊 User Statistics</h2>
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card loading">
+            <h3>Enterprise Users</h3>
+            <div class="stat-value" id="stat-enterprise">—</div>
+          </div>
+          <div class="stat-card loading">
+            <h3>Free Users</h3>
+            <div class="stat-value" id="stat-free">—</div>
+          </div>
+          <div class="stat-card loading">
+            <h3>Admin Users</h3>
+            <div class="stat-value" id="stat-admin">—</div>
+          </div>
+          <div class="stat-card loading">
+            <h3>Total Users</h3>
+            <div class="stat-value" id="stat-total">—</div>
+          </div>
+        </div>
+        <div id="stats-error" class="error-message" style="display: none;"></div>
+      </div>
+
       <div class="api-links">
         <p><strong>Quick Links:</strong></p>
         <a href="http://localhost:8000/docs" target="_blank">📚 API Docs</a>
@@ -76,5 +111,44 @@
         Use the API endpoints above to get started
       </p>
     </div>
+
+    <script>
+      // Admin token from seeded data
+      const ADMIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYTAzODIyYS1iZGRkLTQ3ODctYTVhZS1hZDgwMTVlYzFhZWQiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwiZXhwIjoxNzcxMjgxODQ3fQ.ecD3N8rlnSxDJvvbRlv34lrXK3w6A2rOQW4YsBZbacQ';
+
+      async function fetchStats() {
+        try {
+          const response = await fetch('http://localhost:8000/api/users/stats', {
+            headers: {
+              'Authorization': `Bearer ${ADMIN_TOKEN}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          
+          // Update stats display
+          document.getElementById('stat-total').textContent = data.total;
+          document.getElementById('stat-enterprise').textContent = data.by_plan.enterprise || 0;
+          document.getElementById('stat-free').textContent = data.by_plan.free || 0;
+          document.getElementById('stat-admin').textContent = data.by_plan.admin || 0;
+
+          // Remove loading state
+          document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('loading'));
+          document.getElementById('stats-section').style.display = 'block';
+        } catch (error) {
+          console.error('Failed to fetch stats:', error);
+          document.getElementById('stats-error').textContent = 'Failed to load stats: ' + error.message;
+          document.getElementById('stats-error').style.display = 'block';
+        }
+      }
+
+      // Fetch stats on page load
+      window.addEventListener('DOMContentLoaded', fetchStats);
+    </script>
   </body>
 </html>
