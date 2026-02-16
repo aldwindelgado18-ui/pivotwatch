@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="PivotWatch - Website change detection and analysis" />
+    <title>PivotWatch</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container {
+        background: white;
+        border-radius: 10px;
+        padding: 40px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        max-width: 600px;
+        text-align: center;
+      }
+      h1 { color: #333; margin-bottom: 10px; }
+      p { color: #666; margin-bottom: 20px; }
+      .status { background: #f0f7ff; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left; }
+      .status-item { margin-bottom: 10px; }
+      .status-label { font-weight: bold; color: #667eea; }
+      .status-value { color: #666; }
+      .badge { display: inline-block; padding: 5px 10px; background: #667eea; color: white; border-radius: 20px; font-size: 12px; margin-left: 10px; }
+      .badge.success { background: #48bb78; }
+      .api-links { margin-top: 30px; }
+      a { color: #667eea; text-decoration: none; margin: 0 10px; }
+      a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎯 PivotWatch</h1>
+      <p>Website Change Detection & Analysis Platform</p>
+      
+      <div class="status">
+        <div class="status-item">
+          <span class="status-label">Backend API</span>
+          <span class="badge success">Available</span>
+          <div class="status-value">http://localhost:8000</div>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Database</span>
+          <span class="badge success">Running</span>
+          <div class="status-value">PostgreSQL @ localhost:5432</div>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Cache</span>
+          <span class="badge success">Running</span>
+          <div class="status-value">Redis @ localhost:6379</div>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Task Queue</span>
+          <span class="badge success">Running</span>
+          <div class="status-value">Celery Workers Active</div>
+        </div>
+      </div>
+
+      <div class="api-links">
+        <p><strong>Quick Links:</strong></p>
+        <a href="http://localhost:8000/docs" target="_blank">📚 API Docs</a>
+        <a href="http://localhost:8000/health" target="_blank">💚 Health Check</a>
+      </div>
+
+      <p style="margin-top: 30px; font-size: 12px; color: #999;">
+        React Frontend - Full UI coming soon<br/>
+        Use the API endpoints above to get started
+      </p>
+    </div>
+  </body>
+</html>
