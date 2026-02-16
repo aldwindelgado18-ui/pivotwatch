@@ -7,7 +7,7 @@ from uuid import UUID
 from ..models.base import get_db
 from ..models.user import User
 from .auth import get_current_user
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 router = APIRouter()
 
@@ -73,9 +73,18 @@ class UserStatsResponse(BaseModel):
 
 
 @router.get("/stats", response_model=UserStatsResponse)
-async def get_user_stats(db: Session = Depends(get_db)):
-    """Return user counts grouped by plan"""
-    totals = db.query(func.count(User.id)).scalar() or 0
-    rows = db.query(User.plan, func.count(User.id)).group_by(User.plan).all()
-    by_plan = {plan: count for plan, count in rows}
+async def get_user_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Return user counts grouped by plan. Admins only."""
+    if current_user.plan != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    # Use raw SQL to avoid triggering ORM mapper initialization issues
+    total_res = db.execute(text("SELECT count(*) FROM users"))
+    totals = int(total_res.scalar() or 0)
+    rows_res = db.execute(text("SELECT plan, count(*) as cnt FROM users GROUP BY plan"))
+    rows = rows_res.fetchall()
+    by_plan = {row[0]: int(row[1]) for row in rows}
     return {"total": totals, "by_plan": by_plan}
